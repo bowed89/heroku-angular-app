@@ -34,6 +34,10 @@ import { AccessComponent } from './components/access/access.component';
             {
                 path: '', component: AppMainComponent,
                 children: [
+                    {path: 'cliente', loadChildren: () => import('./components/clientes/clientes.module').then(m => m.ClientesModule)},
+                    {path: 'ordenes', loadChildren: () => import('./components/ordenes/ordenes.module').then(m => m.OrdenesModule)},
+                    {path: 'productos', loadChildren: () => import('./components/productos/productos.module').then(m => m.ProductosModule)},
+
                     {path: '', component: DashboardComponent},
                     {path: 'uikit/formlayout', component: FormLayoutComponent},
                     {path: 'uikit/input', component: InputComponent},
@@ -60,8 +64,8 @@ import { AccessComponent } from './components/access/access.component';
                 ],
             },
             {path:'pages/landing', component: LandingComponent},
-            {path:'pages/login', component: LoginComponent},
             {path:'pages/error', component: ErrorComponent},
+            {path:'pages/login', component: LoginComponent},
             {path:'pages/notfound', component: NotfoundComponent},
             {path:'pages/access', component: AccessComponent},
             {path: '**', redirectTo: 'pages/notfound'},

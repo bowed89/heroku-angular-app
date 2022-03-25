@@ -116,13 +116,14 @@ export class InputComponent implements OnInit{
     filterCountry(event) {
         const filtered: any[] = [];
         const query = event.query;
+        console.log(query)
+        console.log(event)
         for (let i = 0; i < this.countries.length; i++) {
             const country = this.countries[i];
             if (country.name.toLowerCase().indexOf(query.toLowerCase()) == 0) {
                 filtered.push(country);
             }
         }
-
         this.filteredCountries = filtered;
     }
 }
