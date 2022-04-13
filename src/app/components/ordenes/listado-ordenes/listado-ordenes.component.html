@@ -7,14 +7,14 @@
                     <div class="my-2">
                         <button pButton pRipple label="Nuevo" icon="pi pi-plus" class="p-button-success mr-2"
                             (click)="openNew()"></button>
-                       <!--  <button pButton pRipple label="Borrar" icon="pi pi-trash" class="p-button-danger"
+                        <!--  <button pButton pRipple label="Borrar" icon="pi pi-trash" class="p-button-danger"
                             (click)="deleteSelectedProducts()"
                             [disabled]="!selectedProducts || !selectedProducts.length"></button> -->
                     </div>
                 </ng-template>
 
                 <ng-template pTemplate="right">
-                  <!--   <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import"
+                    <!--   <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import"
                         chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload> -->
                     <button pButton pRipple label="Export" icon="pi pi-upload" class="p-button-help"
                         (click)="dt.exportCSV()"></button>
@@ -43,7 +43,7 @@
                         </th>
                         <th pSortableColumn="code">#Orden <p-sortIcon field="code"></p-sortIcon>
                         </th>
-                        <th pSortableColumn="code">Fecha de Orden <p-sortIcon field="code"></p-sortIcon>
+                        <th pSortableColumn="code">#Cliente <p-sortIcon field="code"></p-sortIcon>
                         </th>
                         <th pSortableColumn="code">Producto <p-sortIcon field="code"></p-sortIcon>
                         </th>
@@ -57,6 +57,8 @@
                         </th>
                         <th pSortableColumn="category">Cambio(Bs.)<p-sortIcon field="category"></p-sortIcon>
                         </th>
+                        <th pSortableColumn="code">Fecha de Orden <p-sortIcon field="code"></p-sortIcon>
+                        </th>
                         <th></th>
                     </tr>
                 </ng-template>
@@ -66,13 +68,13 @@
                             <p-tableCheckbox [value]="product"></p-tableCheckbox>
                         </td>
                         <td style="width:14%; min-width:10rem;">
-                            {{orden.id_orden_total}} 
+                            {{orden.id_orden_total}}
                         </td>
                         <td style="width:14%; min-width:10rem;">
-                            {{orden.created_on | date: 'dd/MM/yyyy'}} 
+                            {{orden.nombre_cliente}}
                         </td>
                         <td style="width:14%; min-width:10rem;">
-                            {{orden.nombre_producto}} 
+                            {{orden.nombre_producto}}
                         </td>
                         <td style="width:14%; min-width:10rem;">
                             {{orden.preciounidad}}
@@ -88,6 +90,9 @@
                         </td>
                         <td style="width:14%; min-width:10rem;">
                             {{orden.cambio}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            {{orden.created_on | date: 'dd/MM/yyyy'}}
                         </td>
 
                         <!-- <td>
@@ -109,13 +114,16 @@
                 <div class="formgrid grid">
                     <div class="field col">
                         <label for="price">Nombre del Cliente</label>
-                        <p-autoComplete  placeholder="Cliente" id="dd" [dropdown]="true" [multiple]="false"
+                        <!-- <p-autoComplete  placeholder="Cliente" id="dd" [dropdown]="true" [multiple]="false"
                             [suggestions]="filteredClients" [(ngModel)]="ordenTotal.id_cliente" (completeMethod)="filterClients($event)"
                             field="nom_completo">
-                        </p-autoComplete>
+                        </p-autoComplete> -->
+                        <input type="text" pInputText id="name" [(ngModel)]="ordenTotal.nombre_cliente" required
+                            autofocus />
+
                     </div>
                 </div>
-    
+
                 <div class="formgrid grid">
                     <div class="field col">
                         <table>
@@ -123,6 +131,7 @@
                                 <tr>
                                     <th><label for="price">Producto</label></th>
                                     <th><label for="price">Cantidad</label></th>
+                                    <th><label for="price">Precio</label></th>
                                     <th><label for="price">Total</label></th>
                                     <th></th>
                                 </tr>
@@ -136,13 +145,17 @@
                                         </p-autoComplete>
                                     </td>
                                     <td>
-                                        <p-inputNumber [showButtons]="false"  [(ngModel)]="field.cantidad" [min]="1" (ngModelChange)="changeFlagCant($event)"
+                                        <p-inputNumber [showButtons]="false" [(ngModel)]="field.cantidad" [min]="1"
+                                            (ngModelChange)="changeFlagCant($event)" [max]="100" disabled>
+                                        </p-inputNumber>
+                                    </td>
+                                    <td>
+                                        <p-inputNumber [showButtons]="false" [(ngModel)]="field.precio" [min]="1"
                                             [max]="100" disabled>
                                         </p-inputNumber>
                                     </td>
                                     <td>
-                                        <p-inputNumber [showButtons]="false"  
-                                        [(ngModel)]="field.total" [min]="1"
+                                        <p-inputNumber [showButtons]="false" [(ngModel)]="field.total" [min]="1"
                                             [max]="100" disabled>
                                         </p-inputNumber>
                                     </td>
@@ -160,13 +173,19 @@
                                         </p-autoComplete>
                                     </td>
                                     <td>
-                                        <p-inputNumber [showButtons]="false" [(ngModel)]="newProdCant.cantidad" (ngModelChange)="changeFlagCant($event)"
-                                            [min]="1" [max]="100">
+                                        <p-inputNumber [showButtons]="false" [(ngModel)]="newProdCant.cantidad"
+                                            (ngModelChange)="changeFlagCant($event)" [min]="1" [max]="100">
                                         </p-inputNumber>
 
                                     </td>
                                     <td>
-                                        <p-inputNumber [showButtons]="false" [(ngModel)]="newProdCant.total" [min]="1" 
+                                        <p-inputNumber [showButtons]="false" [(ngModel)]="newProdCant.precio" [min]="1"
+                                            [max]="100" disabled>
+                                        </p-inputNumber>
+
+                                    </td>
+                                    <td>
+                                        <p-inputNumber [showButtons]="false" [(ngModel)]="newProdCant.total" [min]="1"
                                             [max]="100" disabled>
                                         </p-inputNumber>
 
@@ -189,7 +208,8 @@
                     </div>
                     <div class="field col">
                         <label for="quantity">Efectivo(Bs.)</label>
-                        <p-inputNumber [showButtons]="false" [(ngModel)]="ordenTotal.efectivo" (ngModelChange)="cambioBs()" [min]="1" [max]="1000">
+                        <p-inputNumber [showButtons]="false" [(ngModel)]="ordenTotal.efectivo"
+                            (ngModelChange)="cambioBs()" [min]="1" [max]="1000">
                         </p-inputNumber>
                     </div>
                     <div class="field col">

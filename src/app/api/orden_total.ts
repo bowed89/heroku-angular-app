@@ -5,4 +5,5 @@ export interface OrdenTotal {
     total_pagar?: number;
     efectivo?: number;
     cambio?: number;
+    nombre_cliente?: string;
 }

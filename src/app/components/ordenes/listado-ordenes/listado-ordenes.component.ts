@@ -21,6 +21,8 @@ export class ListadoOrdenesComponent implements OnInit {
     filteredClients: any[];
     ordenTotal: OrdenTotal;
     flagCantidad: boolean = false;
+    arrayComida = [];
+    arrayRifa = [];
 
     prodCantArray: Array<any> = [];
     newProdCant: any = {};
@@ -49,9 +51,8 @@ export class ListadoOrdenesComponent implements OnInit {
         private _clienteService: ClienteService,
 
         private productService: ProductService,
-        private messageService: MessageService,
-        private confirmationService: ConfirmationService
-    ) {}
+        private messageService: MessageService
+    ) { }
 
     ngOnInit() {
         this._productoService.getListProducts().subscribe((resp) => {
@@ -80,6 +81,7 @@ export class ListadoOrdenesComponent implements OnInit {
         this.prodCantArray.push(this.newProdCant);
         console.log(this.prodCantArray);
         for (let i in this.prodCantArray) {
+            this.prodCantArray[i].precio = this.prodCantArray[i]['prod']['precio']
             // Multiplica cantidad X precio unitario y suma total
             this.prodCantArray[i].total =
                 this.prodCantArray[i]['prod']['precio'] *
@@ -167,48 +169,69 @@ export class ListadoOrdenesComponent implements OnInit {
     hideDialog() {
         this.productDialog = false;
         this.submitted = false;
-        this.prodCantArray = []
+        this.prodCantArray = [];
     }
 
     saveClient() {
         var sumaCAntidad = 0;
         this.submitted = true;
-        var objProdDet = {}
+        var objProdDet = {};
 
         for (let i in this.prodCantArray) {
             sumaCAntidad = sumaCAntidad + this.prodCantArray[i]['cantidad'];
         }
-        this.ordenTotal.id_cliente = this.ordenTotal.id_cliente['id_cliente'];
+        //this.ordenTotal.id_cliente = this.ordenTotal.id_cliente['id_cliente'];
+        this.ordenTotal.id_cliente = 3; // id_cliente estatico
         this.ordenTotal.id_usuario = 3;
         this.ordenTotal.cantidad = sumaCAntidad;
-        console.log(this.ordenTotal);
+        console.log('this.ordenTotal', this.ordenTotal);
         console.log(this.prodCantArray);
 
-        this._ordenService.addOrdenTotal(this.ordenTotal).subscribe(res => {
-            console.log(res)
+        this._ordenService.addOrdenTotal(this.ordenTotal).subscribe((res) => {
+            console.log(res);
             for (let i in this.prodCantArray) {
                 objProdDet = {
-                    "id_orden_total": res['res'].id_orden_total,
-                    "cantidad": this.prodCantArray[i]['cantidad'],
-                    "nombre_producto": this.prodCantArray[i]['prod']['nombre'],
-                    "precio": this.prodCantArray[i]['prod']['precio'],
-                    "total": this.prodCantArray[i]['total'],
-                    
-                }
+                    id_orden_total: res['res'].id_orden_total,
+                    cantidad: this.prodCantArray[i]['cantidad'],
+                    nombre_producto: this.prodCantArray[i]['prod']['nombre'],
+                    precio: this.prodCantArray[i]['prod']['precio'],
+                    total: this.prodCantArray[i]['total']
+                };
                 console.log(objProdDet);
                 this._ordenService.addOrdenDetalle(objProdDet).subscribe(resp => {
-                    console.log(resp)
+                    console.log(resp);
+                    // Separamos si el pedido es comida o rifa
+                    let body = { 'nombre_producto': resp['res']['nombre_producto'] }
+                    this._productoService.getIdCatProd(body).subscribe(res => {
+                        console.log(res[0]['id_cat_prod']);
+                        // si es 10 es COMIDA
+                        if(res[0]['id_cat_prod'] == 10) {
+                            this.arrayComida.push(resp)
+                            console.log('arrayComida =>', this.arrayComida);
+                        } else {
+                            // si es otro es RIFA
+                            this.arrayRifa.push(resp)
+                            console.log('arrayRifa =>', this.arrayRifa);
+                        }
+                    })
                     // se vuelve a cargar la tabla de ordenes...
                     setTimeout(() => {
-                        this._ordenService.getAllOrdenes().subscribe((res) => {
-                            this.ordenes = res;
-                            this.hideDialog();
-                        });
+                        this._ordenService
+                            .getAllOrdenes()
+                            .subscribe((res) => {
+                                this.ordenes = res;
+                                this.hideDialog();
+                            });
                     }, 1500);
-                })
-                this.messageService.add({severity: 'success', summary: 'Operación Exitosa', detail: 'Orden Creada Satisfactoriamente', life: 3000});
+                });
             }
-        })
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Operación Exitosa',
+                detail: 'Orden Creada Satisfactoriamente',
+                life: 3000,
+            });
+        });
     }
 
     filterProducts(event) {
@@ -225,7 +248,7 @@ export class ListadoOrdenesComponent implements OnInit {
         this.filteredProducts = filtered;
     }
 
-    filterClients(event) {
+    /* filterClients(event) {
         const filtered: any[] = [];
         const query = event.query;
         console.log(query);
@@ -240,6 +263,5 @@ export class ListadoOrdenesComponent implements OnInit {
         if (this.filteredClients[0] !== undefined)
             this.ordenTotal.id_cliente = this.filteredClients[0].id_cliente;
         console.log('tthis.ordenTotal', this.ordenTotal);
-    }
-
+    } */
 }

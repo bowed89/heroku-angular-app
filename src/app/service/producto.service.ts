@@ -21,4 +21,7 @@ export class ProductoService {
     findProducto(object: Object): Observable<object> {
         return this.http.post(`${URL_SERVICIOS}/products/find`, object);
     }
+    getIdCatProd(body: object) {
+        return this.http.post(`${URL_SERVICIOS}/products/idcatprod`, body);
+    }
 }
