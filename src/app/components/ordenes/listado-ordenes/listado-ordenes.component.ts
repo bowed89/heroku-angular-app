@@ -21,8 +21,14 @@ export class ListadoOrdenesComponent implements OnInit {
     filteredClients: any[];
     ordenTotal: OrdenTotal;
     flagCantidad: boolean = false;
-    arrayComida = [];
-    arrayRifa = [];
+    arrayComida: Array<any> = [];
+    arrayRifa: Array<any> = [];
+
+    arrayComida2: Array<any> = [];
+    arrayRifa2: any;
+    ex: Array<any> = [];
+
+    addOrden: Array<any> = [];
 
     prodCantArray: Array<any> = [];
     newProdCant: any = {};
@@ -51,10 +57,12 @@ export class ListadoOrdenesComponent implements OnInit {
         private _clienteService: ClienteService,
 
         private productService: ProductService,
-        private messageService: MessageService
+        private messageService: MessageService,
     ) { }
 
     ngOnInit() {
+
+
         this._productoService.getListProducts().subscribe((resp) => {
             this.listProd = resp;
         });
@@ -74,7 +82,6 @@ export class ListadoOrdenesComponent implements OnInit {
             .getProducts()
             .then((data) => (this.products = data));
     }
-
     addFieldValueJ() {
         this.flagCantidad = false;
         var sumarTotal = 0;
@@ -170,12 +177,16 @@ export class ListadoOrdenesComponent implements OnInit {
         this.productDialog = false;
         this.submitted = false;
         this.prodCantArray = [];
+        this.addOrden = []
+        this.arrayComida = [];
+        this.arrayRifa = [];
     }
 
     saveClient() {
         var sumaCAntidad = 0;
         this.submitted = true;
-        var objProdDet = {};
+        let objProdDet = {};
+
 
         for (let i in this.prodCantArray) {
             sumaCAntidad = sumaCAntidad + this.prodCantArray[i]['cantidad'];
@@ -187,8 +198,9 @@ export class ListadoOrdenesComponent implements OnInit {
         console.log('this.ordenTotal', this.ordenTotal);
         console.log(this.prodCantArray);
 
-        this._ordenService.addOrdenTotal(this.ordenTotal).subscribe((res) => {
+        this._ordenService.addOrdenTotal(this.ordenTotal).subscribe(res => {
             console.log(res);
+
             for (let i in this.prodCantArray) {
                 objProdDet = {
                     id_orden_total: res['res'].id_orden_total,
@@ -199,40 +211,162 @@ export class ListadoOrdenesComponent implements OnInit {
                 };
                 console.log(objProdDet);
                 this._ordenService.addOrdenDetalle(objProdDet).subscribe(resp => {
-                    console.log(resp);
-                    // Separamos si el pedido es comida o rifa
-                    let body = { 'nombre_producto': resp['res']['nombre_producto'] }
-                    this._productoService.getIdCatProd(body).subscribe(res => {
-                        console.log(res[0]['id_cat_prod']);
-                        // si es 10 es COMIDA
-                        if(res[0]['id_cat_prod'] == 10) {
-                            this.arrayComida.push(resp)
-                            console.log('arrayComida =>', this.arrayComida);
-                        } else {
-                            // si es otro es RIFA
-                            this.arrayRifa.push(resp)
-                            console.log('arrayRifa =>', this.arrayRifa);
-                        }
-                    })
-                    // se vuelve a cargar la tabla de ordenes...
-                    setTimeout(() => {
-                        this._ordenService
-                            .getAllOrdenes()
-                            .subscribe((res) => {
-                                this.ordenes = res;
-                                this.hideDialog();
-                            });
-                    }, 1500);
+                    this.addOrden.push(resp['res'])
                 });
             }
-            this.messageService.add({
-                severity: 'success',
-                summary: 'Operación Exitosa',
-                detail: 'Orden Creada Satisfactoriamente',
-                life: 3000,
-            });
+
+            setTimeout(() => {
+                let body;
+                console.log(this.addOrden);
+                for (let i in this.addOrden) {
+                    console.log(this.addOrden[i].nombre_producto);
+                    body = { 'nombre_producto': this.addOrden[i].nombre_producto }
+
+                    this._productoService.getIdCatProd(body).subscribe(res => {
+                        console.log('getIdCatProd', res);
+                        // si es 10 es COMIDA
+                        if (res[0]['id_cat_prod'] == 10) {
+                            this.arrayComida.push({
+                                nombre_producto: this.addOrden[i].nombre_producto,
+                                id_orden_total: this.addOrden[i].id_orden_total,
+                                cantidad: this.addOrden[i].cantidad
+                            })
+
+                        } else {
+                            // si es otro es RIFA
+                            this.arrayRifa.push({
+                                nombre_producto: this.addOrden[i].nombre_producto,
+                                id_orden_total: this.addOrden[i].id_orden_total,
+                                cantidad: this.addOrden[i].cantidad
+                            })
+                        }
+                    })
+                }
+                console.log(this.arrayComida);
+                console.log(this.arrayRifa);
+                this.pasarArrays(this.arrayComida, this.arrayRifa)
+
+            }, 1000)
         });
+
+        // se vuelve a cargar la tabla de ordenes...
+        setTimeout(() => {
+            this._ordenService
+                .getAllOrdenes()
+                .subscribe((res) => {
+                    this.ordenes = res;
+                    this.hideDialog();
+                });
+        }, 1500);
+
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Operación Exitosa',
+            detail: 'Orden Creada Satisfactoriamente',
+            life: 3000,
+        });
+
+
+
     }
+
+
+
+    pasarArrays(arrayC: Array<any>, arrayR: Array<any>) {
+        console.log(arrayC);
+        console.log(arrayR);
+
+        setTimeout(() => {
+            const setComida = () => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(arrayC);
+                    }, 2000);
+                });
+            }
+            setComida().then((res: any) => {
+                console.log(res);
+                document.open();
+                for (let i in res) {
+                    document.write(`
+                    <html>
+                        <head>
+                        <title>Print tab</title>
+                        <style>
+                        //........Customized style.......
+                        </style>
+                        </head>
+                        <body onload="window.print();window.close()">
+                            <p>ORDEN #: ${res[i].id_orden_total} </p> 
+                            <p>TIPO: COMIDA</p>
+                            <p>NOMBRE: ${res[i].nombre_producto} </p>
+                            <p>CANTIDAD: ${res[i].cantidad} </p> 
+                            ***************************
+                            </body>
+                    </html>
+                    
+                    `);
+                }
+
+                window.print();
+                window.close();
+            })
+        }, 2000)
+
+
+        setTimeout(() => {
+            const setRifa = () => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(arrayR);
+                    }, 2000);
+                });
+            }
+            setRifa().then((res: any) => {
+                console.log(res);
+                document.open();
+                for (let i in res) {
+                    document.write(`
+                    <html>
+                        <head>
+                        <title>Print tab</title>
+                        <style>
+                        //........Customized style.......
+                        </style>
+                        </head>
+                        <body onload="window.print();window.close()">
+                            <p>ORDEN #: ${res[i].id_orden_total} </p> 
+                            <p>TIPO: RIFA</p>
+                            <p>NOMBRE: ${res[i].nombre_producto} </p>
+                            <p>CANTIDAD: ${res[i].cantidad} </p> 
+                            ***************************
+                            </body>
+                    </html>
+                    
+                    `);
+                }
+                window.print();
+                window.close();
+                window.location.reload()
+            })
+        }, 3000)
+    }
+
+    rescatar(a) {
+        this.arrayComida2 = a
+        console.log(this.arrayComida2);
+
+        let printContents = document.getElementById('component1').innerHTML;
+        let originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        window.close();
+        document.body.innerHTML = originalContents;
+
+    }
+
+
+
 
     filterProducts(event) {
         const filtered: any[] = [];
@@ -247,21 +381,4 @@ export class ListadoOrdenesComponent implements OnInit {
         }
         this.filteredProducts = filtered;
     }
-
-    /* filterClients(event) {
-        const filtered: any[] = [];
-        const query = event.query;
-        console.log(query);
-        console.log(event);
-        for (let i = 0; i < Object.keys(this.listClients).length; i++) {
-            const lista = this.listClients[i];
-            if (lista.nombre.toLowerCase().indexOf(query.toLowerCase()) == 0) {
-                filtered.push(lista);
-            }
-        }
-        this.filteredClients = filtered;
-        if (this.filteredClients[0] !== undefined)
-            this.ordenTotal.id_cliente = this.filteredClients[0].id_cliente;
-        console.log('tthis.ordenTotal', this.ordenTotal);
-    } */
 }
