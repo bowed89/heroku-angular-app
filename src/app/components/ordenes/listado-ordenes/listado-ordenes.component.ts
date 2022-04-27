@@ -216,6 +216,7 @@ export class ListadoOrdenesComponent implements OnInit {
             }
 
             setTimeout(() => {
+                console.log('entra a linea 219');
                 let body;
                 console.log(this.addOrden);
                 for (let i in this.addOrden) {
@@ -251,6 +252,7 @@ export class ListadoOrdenesComponent implements OnInit {
 
         // se vuelve a cargar la tabla de ordenes...
         setTimeout(() => {
+            console.log('entra a linea 255');
             this._ordenService
                 .getAllOrdenes()
                 .subscribe((res) => {
@@ -277,9 +279,11 @@ export class ListadoOrdenesComponent implements OnInit {
         console.log(arrayR);
 
         setTimeout(() => {
+            console.log('entra a linea 282');
             const setComida = () => {
                 return new Promise((resolve) => {
                     setTimeout(() => {
+                        console.log('entra a linea 286');
                         resolve(arrayC);
                     }, 2000);
                 });
@@ -315,9 +319,11 @@ export class ListadoOrdenesComponent implements OnInit {
 
 
         setTimeout(() => {
+            console.log('entra a linea 322');
             const setRifa = () => {
                 return new Promise((resolve) => {
                     setTimeout(() => {
+                        console.log('entra a linea 326');
                         resolve(arrayR);
                     }, 2000);
                 });
